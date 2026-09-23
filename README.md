@@ -40,7 +40,7 @@ WSL or any Linux should work with this. Since this app runs on a LAMP stack, thi
 
 ```bash
 sudo apt-get update && apt-get install -y
-sudo apache2 mysql-server php libapache2-mod-php php-mysql curl
+sudo apt install apache2 mysql-server php libapache2-mod-php php-mysql curl
 ```
 
 ## Build the database
