@@ -2,7 +2,7 @@
 
 ## Setup
 
-There are 2 methods to tun this app locally:
+There are 2 methods to run this app locally:
 1. Docker (Recommended)
 2. Linux environment
 
@@ -20,13 +20,13 @@ If you're on Linux, there is documentation on how to install docker on your flav
 
 #### Step 2: Build and run the image
 
-After cloning the repository, use this command to begin building the image:
+After cloning the repository, build the docker image using docker build. You can name the image anythin you want, but we'll be using "colors-app" for this example.
 
 ```bash
 docker build -t colors-app .
 ```
 
-After the image is built, run it with this command:
+After the image is built, run it using ducker run. The -it flag will keep you conencted to the docker container and give you an interctive terminal.
 
 ```bash
 docker run -it -p 8000:8000 colors-app
@@ -36,7 +36,7 @@ This will then put you in the interactive terminal.
 
 ### Method 2: Linux Environment
 
-WSL or any Linux should work with this. Since this runs on a LAMP stack, make sure you have all the prerequisites.
+WSL or any Linux should work with this. Since this app runs on a LAMP stack, this will make sure you have all the prerequisites, assuming you have an Ubuntu distro.
 
 ```bash
 sudo apt-get update && apt-get install -y
@@ -56,7 +56,7 @@ Then create your database and tables:
 
 ```mysql
 create database COP4331;
-use COP4331
+use COP4331;
 ```
 
 ```mysql
@@ -81,7 +81,16 @@ CREATE TABLE `COP4331`.`Colors`
 ) ENGINE = InnoDB;
 ```
 
-Finally, create a user for the database. This will then be used so the php files can communicate with the database. Change "Username" and "Password" to your own.
+Once the tables are made, there needs to be at least one user inserted into the Users table so you can login to the app. **Make sure to set your own username and password for this user**. This is the only thing that needs to be added to the database manually, colors can be added through the app once logged in.
+
+```mysql
+insert into Users (FirstName,LastName,Login,Password) VALUES ('First' 'Last','Username','Password');
+```
+
+Finally, create a user for the database. This will then be used so the php files can communicate with the database. **Change "Username" and "Password" to your own**. 
+
+>[!WARNING]
+>Type this instead of copy paste as pasting will automatically enter the first line and you will not be bale to change the username or password
 
 ```mysql
 create user 'Username' identified by 'Password';
