@@ -89,8 +89,10 @@ insert into Users (FirstName,LastName,Login,Password) VALUES ('First' 'Last','Us
 
 Finally, create a user for the database. This will then be used so the php files can communicate with the database. **Change "Username" and "Password" to your own**. 
 
+
 >[!WARNING]
->Type this instead of copy paste as pasting will automatically enter the first line and you will not be bale to change the username or password
+>**Type this instead of copy paste**, as pasting will automatically enter the first line and you will NOT be able to change the username or password after the fact.
+
 
 ```mysql
 create user 'Username' identified by 'Password';
@@ -104,7 +106,7 @@ exit
 ```
 ## Final steps
 
-Once the database is made and you have exited MySQL, make sure to edit Login.php, and edit line 10 to match your username and password. The last step is to finally run the server.
+Once the database is made and you have exited MySQL, make sure to edit the PHP files to match the username and password of database that you set. The last step is to finally run the server.
 
 ```bash
 php -S localhost:8000
