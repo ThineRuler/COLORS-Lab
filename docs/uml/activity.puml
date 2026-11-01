@@ -1,0 +1,147 @@
+@startuml
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam activity {
+    BackgroundColor #F7FAFC
+    BorderColor #2B6CB0
+    ArrowColor #2D3748
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam partition {
+    BackgroundColor #FAFAFA
+    BorderColor #A0AEC0
+    FontName "Arial"
+    FontSize 13
+    FontStyle bold
+}
+
+skinparam diamond {
+    BackgroundColor #EDF2F7
+    BorderColor #2B6CB0
+    FontName "Arial"
+    FontSize 11
+}
+
+|#EBF8FF|User|
+|#EDF2F7|Client (Browser / JS)|
+|#F0FFF4|Server API (PHP)|
+|#FFFAF0|Database (MySQL)|
+
+|User|
+start
+:Open application (index.html);
+
+repeat
+    :Enter Login and Password;
+    :Click "Do It" button;
+
+    |Client (Browser / JS)|
+    :doLogin() extracts credentials;
+    :Serialize payload to JSON;
+    :Send POST request to Login.php;
+
+    |Server API (PHP)|
+    :Read and decode JSON input;
+    :Connect to MySQL database;
+    :Execute SELECT on Users\nWHERE Login=? AND Password=?;
+
+    |Database (MySQL)|
+    :Query COP4331.Users table;
+    :Return query result;
+
+    |Server API (PHP)|
+    if (User record found?) then (yes)
+        :Send JSON response with\nuserId, firstName, lastName;
+        |Client (Browser / JS)|
+        :Parse JSON response;
+        :saveCookie() with 20-min expiry;
+        :Redirect to color.html;
+        stop
+    else (no)
+        :Send error JSON\n("No Records Found");
+        |Client (Browser / JS)|
+        :Display "User/Password combination incorrect"\nin loginResult;
+        |User|
+    endif
+repeat while (Invalid credentials)
+
+|Client (Browser / JS)|
+:color.html DOMContentLoaded;
+:readCookie() parses session;
+
+if (Valid userId in cookie?) then (no)
+    :Redirect to index.html;
+    stop
+else (yes)
+    :Display Color Dashboard UI;
+endif
+
+|User|
+if (Select Action) then (Add Color)
+    :Enter color name in colorText;
+    :Click "Add Color"\nbutton;
+    
+    |Client (Browser / JS)|
+    :addColor() builds JSON payload\n{color, userId};
+    :Send POST request to\nAddColor.php;
+    
+    |Server API (PHP)|
+    :Read and decode JSON;
+    :Execute INSERT into Colors (UserId, Name) VALUES (?, ?);
+    
+    |Database (MySQL)|
+    :Insert record into COP4331.Colors;
+    
+    |Server API (PHP)|
+    :Send JSON response\n{"error": ""};
+    
+    |Client (Browser / JS)|
+    :Display "Color has been added"\nin colorAddResult;
+    stop
+
+else if (Select Action) then (Search Colors)
+    |User|
+    :Enter search query in searchText;
+    :Click "Search Color" button;
+    
+    |Client (Browser / JS)|
+    :searchColor() builds JSON payload\n{search, userId};
+    :Send POST request to SearchColors.php;
+    
+    |Server API (PHP)|
+    :Execute SELECT Name from Colors\nWHERE Name LIKE ? AND UserID=?;
+    
+    |Database (MySQL)|
+    :Query\nmatching\nrecords;
+
+    |Server API (PHP)|
+    if (Matching records\nfound?) then (yes)
+        :Send\nJSON with results array\n{"results": [...], "error": ""};
+        |Client (Browser / JS)|
+        :Parse JSON results;
+        :Render formatted color list\nin <p id="colorList">;
+        :Display "Color(s) has been retrieved"\nin colorSearchResult;
+        stop
+    else (no)
+        |Server API (PHP)|
+        :Send\nJSON\nerror\n{"error": "No Records Found"};
+        |Client (Browser / JS)|
+        :Display error in colorSearchResult;
+        stop
+    endif
+
+else (Log Out)
+    |User|
+    :Click "Log Out" button;
+    
+    |Client (Browser / JS)|
+    :doLogout() resets userId = 0;
+    :Expire session cookie;
+    :Redirect to index.html;
+    stop
+endif
+@enduml

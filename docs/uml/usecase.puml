@@ -1,0 +1,57 @@
+@startuml usecase
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle stickman
+
+skinparam actor {
+    BackgroundColor #FFFFFF
+    BorderColor #1A365D
+    FontName "Arial"
+    FontSize 13
+}
+
+skinparam usecase {
+    BackgroundColor #F7FAFC
+    BorderColor #2B6CB0
+    ArrowColor #2D3748
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam rectangle {
+    BackgroundColor #FFFFFF
+    BorderColor #718096
+    FontName "Arial"
+    FontSize 14
+    FontStyle bold
+}
+
+actor "User" as user
+actor "MySQL Database" as db <<Secondary System>>
+
+rectangle "Colors Web Application" {
+    usecase "Log In" as UC_Login
+    usecase "Validate Credentials" as UC_Validate
+    usecase "Display Login Error" as UC_LoginErr
+    usecase "Add Color" as UC_AddColor
+    usecase "Search Colors" as UC_SearchColors
+    usecase "Log Out" as UC_Logout
+
+    ' Relationships within the system boundary
+    UC_Login ..> UC_Validate : <<include>>
+    UC_Login <.. UC_LoginErr : <<extend>>
+}
+
+' User associations
+user -- UC_Login
+user -- UC_AddColor
+user -- UC_SearchColors
+user -- UC_Logout
+
+' Database associations
+UC_Validate -- db
+UC_AddColor -- db
+UC_SearchColors -- db
+
+@enduml

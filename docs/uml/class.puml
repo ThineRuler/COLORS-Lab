@@ -1,0 +1,144 @@
+@startuml class
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam linetype ortho
+
+skinparam class {
+    BackgroundColor #F7FAFC
+    BorderColor #2B6CB0
+    ArrowColor #2D3748
+    FontName "Arial"
+    FontSize 12
+    HeaderBackgroundColor #EDF2F7
+}
+
+skinparam package {
+    BackgroundColor #FFFFFF
+    BorderColor #A0AEC0
+    FontName "Arial"
+    FontSize 13
+    FontStyle bold
+}
+
+package "Frontend Layer (Client Browser)" {
+    class ColorAppClient <<JavaScript Module>> {
+        - urlBase : string = "http://localhost:8000/LAMPAPI"
+        - extension : string = "php"
+        - userId : int = 0
+        - firstName : string = ""
+        - lastName : string = ""
+        + doLogin() : void
+        + saveCookie() : void
+        + readCookie() : void
+        + doLogout() : void
+        + addColor() : void
+        + searchColor() : void
+    }
+
+    class LoginPage <<HTML View (index.html)>> {
+        + loginNameInput : string
+        + loginPasswordInput : string
+        + loginResultSpan : string
+        + onLoginClick() : void
+    }
+
+    class ColorPage <<HTML View (color.html)>> {
+        + userNameSpan : string
+        + searchTextInput : string
+        + colorSearchResultSpan : string
+        + colorListParagraph : string
+        + colorTextInput : string
+        + colorAddResultSpan : string
+        + onAddColorClick() : void
+        + onSearchColorClick() : void
+        + onLogoutClick() : void
+    }
+
+    ColorAppClient ..> LoginPage : controls
+    ColorAppClient ..> ColorPage : controls
+}
+
+package "Backend API Layer (PHP / LAMPAPI)" {
+    interface ApiEndpoint <<interface>> {
+        + getRequestInfo() : array
+        + sendResultInfoAsJson(obj : string) : void
+        + returnWithError(err : string) : void
+    }
+
+    class LoginEndpoint <<PHP Script (Login.php)>> {
+        + handleRequest() : void
+        + getRequestInfo() : array
+        + sendResultInfoAsJson(obj : string) : void
+        + returnWithInfo(firstName : string, lastName : string, id : int) : void
+        + returnWithError(err : string) : void
+    }
+
+    class AddColorEndpoint <<PHP Script (AddColor.php)>> {
+        + handleRequest() : void
+        + getRequestInfo() : array
+        + sendResultInfoAsJson(obj : string) : void
+        + returnWithError(err : string) : void
+    }
+
+    class SearchColorsEndpoint <<PHP Script (SearchColors.php)>> {
+        + handleRequest() : void
+        + getRequestInfo() : array
+        + sendResultInfoAsJson(obj : string) : void
+        + returnWithInfo(searchResults : string) : void
+        + returnWithError(err : string) : void
+    }
+
+    ApiEndpoint <|.. LoginEndpoint
+    ApiEndpoint <|.. AddColorEndpoint
+    ApiEndpoint <|.. SearchColorsEndpoint
+}
+
+package "Database & Entities (MySQL / COP4331)" {
+    class User <<Database Entity>> {
+        - ID : int {PK}
+        - FirstName : string
+        - LastName : string
+        - Login : string
+        - Password : string
+        + getID() : int
+        + getFirstName() : string
+        + getLastName() : string
+        + getLogin() : string
+        + getPassword() : string
+    }
+
+    class Color <<Database Entity>> {
+        - ID : int {PK}
+        - Name : string
+        - UserID : int {FK}
+        + getID() : int
+        + getName() : string
+        + getUserID() : int
+    }
+
+    class DatabaseConnection <<MySQL Driver>> {
+        - host : string = "localhost"
+        - database : string = "COP4331"
+        - conn : mysqli
+        + prepare(query : string) : mysqli_stmt
+        + close() : void
+    }
+
+    User "1" *-- "0..*" Color : owns >
+}
+
+ColorAppClient ..> LoginEndpoint : AJAX POST
+ColorAppClient ..> AddColorEndpoint
+ColorAppClient ..> SearchColorsEndpoint
+
+LoginEndpoint ..> User : queries (SELECT)
+LoginEndpoint ..> DatabaseConnection : uses
+
+AddColorEndpoint ..> Color : persists (INSERT)
+AddColorEndpoint ..> DatabaseConnection : uses
+
+SearchColorsEndpoint ..> Color : queries (SELECT)
+SearchColorsEndpoint ..> DatabaseConnection : uses
+
+@enduml
