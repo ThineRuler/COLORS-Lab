@@ -5,6 +5,74 @@ let userId = 0;
 let firstName = "";
 let lastName = "";
 
+function formatColor(color)
+{
+	if (!color || typeof color !== "string")
+	{
+		return "";
+	}
+	return color.trim().toLowerCase();
+}
+
+function validateColor(color)
+{
+	if (!color || typeof color !== "string")
+	{
+		return { isValid: false, error: "Color cannot be empty" };
+	}
+	let trimmed = color.trim();
+	if (trimmed.length === 0)
+	{
+		return { isValid: false, error: "Color cannot be empty" };
+	}
+	if (!/^[a-zA-Z\s-]+$/.test(trimmed))
+	{
+		return { isValid: false, error: "Color contains invalid characters" };
+	}
+	return { isValid: true, error: "" };
+}
+
+function validateLoginForm(login, password)
+{
+	if (!login || typeof login !== "string" || login.trim() === "")
+	{
+		return { isValid: false, error: "Username is required" };
+	}
+	if (!password || typeof password !== "string" || password.trim() === "")
+	{
+		return { isValid: false, error: "Password is required" };
+	}
+	return { isValid: true, error: "" };
+}
+
+function parseCookie(cookieString)
+{
+	let parsed = { firstName: "", lastName: "", userId: -1 };
+	if (!cookieString || typeof cookieString !== "string")
+	{
+		return parsed;
+	}
+	let splits = cookieString.split(",");
+	for (let i = 0; i < splits.length; i++)
+	{
+		let thisOne = splits[i].trim();
+		let tokens = thisOne.split("=");
+		if (tokens[0] === "firstName")
+		{
+			parsed.firstName = tokens[1] || "";
+		}
+		else if (tokens[0] === "lastName")
+		{
+			parsed.lastName = tokens[1] || "";
+		}
+		else if (tokens[0] === "userId")
+		{
+			parsed.userId = parseInt(tokens[1] ? tokens[1].trim() : "-1", 10);
+		}
+	}
+	return parsed;
+}
+
 function doLogin()
 {
 	userId = 0;
@@ -16,6 +84,13 @@ function doLogin()
 //	var hash = md5( password );
 	
 	document.getElementById("loginResult").innerHTML = "";
+
+	let validation = validateLoginForm(login, password);
+	if (!validation.isValid)
+	{
+		document.getElementById("loginResult").innerHTML = validation.error;
+		return;
+	}
 
 	let tmp = {login:login,password:password};
 //	var tmp = {login:login,password:hash};
@@ -68,26 +143,10 @@ function saveCookie()
 
 function readCookie()
 {
-	userId = -1;
-	let data = document.cookie;
-	let splits = data.split(",");
-	for(var i = 0; i < splits.length; i++) 
-	{
-		let thisOne = splits[i].trim();
-		let tokens = thisOne.split("=");
-		if( tokens[0] == "firstName" )
-		{
-			firstName = tokens[1];
-		}
-		else if( tokens[0] == "lastName" )
-		{
-			lastName = tokens[1];
-		}
-		else if( tokens[0] == "userId" )
-		{
-			userId = parseInt( tokens[1].trim() );
-		}
-	}
+	let parsed = parseCookie(document.cookie);
+	firstName = parsed.firstName;
+	lastName = parsed.lastName;
+	userId = parsed.userId;
 	
 	if( userId < 0 )
 	{
@@ -112,6 +171,13 @@ function addColor()
 {
 	let newColor = document.getElementById("colorText").value;
 	document.getElementById("colorAddResult").innerHTML = "";
+
+	let validation = validateColor(newColor);
+	if (!validation.isValid)
+	{
+		document.getElementById("colorAddResult").innerHTML = validation.error;
+		return;
+	}
 
 	let tmp = {color:newColor,userId:userId};
 	let jsonPayload = JSON.stringify( tmp );
@@ -182,4 +248,20 @@ function searchColor()
 		document.getElementById("colorSearchResult").innerHTML = err.message;
 	}
 	
+}
+
+if (typeof module !== "undefined" && module.exports)
+{
+	module.exports = {
+		formatColor,
+		validateColor,
+		validateLoginForm,
+		parseCookie,
+		doLogin,
+		saveCookie,
+		readCookie,
+		doLogout,
+		addColor,
+		searchColor
+	};
 }
