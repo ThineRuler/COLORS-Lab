@@ -13,6 +13,8 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.commonjs,
+        ...globals.node,
+        ...globals.jest,
       },
     },
     rules: {
